@@ -26,13 +26,21 @@ export default {
     getmusicDetails(){
         return `${url}/song/detail`
     },
+    //获取歌词
+    getMusicLyric(){
+       return `${url}/lyric`
+    },
     getmusicUrl(){
         return `${url}/song/url`
     },
     //搜索页面制作
     Searchinfo(){
         return `${url}/search`
-    }
+    },
+    //热门搜索
+    searchHot(){
+        return `${url}/search/hot`
+    },
 }
 
 

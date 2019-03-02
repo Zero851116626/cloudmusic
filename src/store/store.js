@@ -10,12 +10,22 @@ const store = new Vuex.Store({
         //这个是存放当前歌曲详情的
         currentSongSource:"",
         currentSongUrl:"",
+
+        //音乐显示总时长
+        alltime:"",
+        //进度条显示总时长
+        numALLTime:"",
         //音乐播放的当前位置
         currentTime:"",
+        //进度条比例
+        radio:"",
 
         //当前歌单的id
         currentlistId:"",
-
+        //搜索记录
+        searchRecorde:"",
+        //是否有音乐需要播放
+        shouldPlay:"",
     },
     computed:{
         currentSongId(){
@@ -30,20 +40,37 @@ const store = new Vuex.Store({
         currentlistId(){
             return this.state.currentlistId;
         },
+        searchRecorde(){
+            return this.state.searchRecorde;
+        },
+        shouldPlay(){
+            return this.state.shouldPlay;
+        },
+        alltime(){
+            return this.state.alltime;
+        },
+        numALLTime(){
+            return this.state.numALLTime;
+        },
+        currentTime(){
+            return this.state.currentTime;
+        },
+        radio(){
+            return this.state.radio;
+        },
 
     },
     mutations:{
+        //mutation是用来管理数据的
         //本地添加记录
         addKeyWordsRecord:(state,str)=>{
+            this.searchRecorde = [];
+            this.searchRecorde.push(str);
             window.localStorage.setItem("record",str)
         },
-        //获取本地记录
-        getKeyWordsRecord(){
-            window.localStorage.getItem("record")
-        },
         //本地删除记录
-        removeKeyWordsRecord(str){
-            window.localStorage.removeItem("record",str)
+        removeKeyWordsRecord(){
+            window.localStorage.removeItem("record")
         },
     },
     actions:{
@@ -53,6 +80,7 @@ const store = new Vuex.Store({
         },
         //常规方法
         getKeyWordsRecord(context){
+            //action是用来触发mutations的
             context.commit("getKeyWordsRecord")
         },
         removeKeyWordsRecord(context){

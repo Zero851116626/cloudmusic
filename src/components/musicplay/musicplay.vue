@@ -16,11 +16,17 @@
                     <span class="iconfont icon-fenxiang2"></span>
                 </div>
             </div>
-            <div class="playbody">
-                <div class="circle">
-                    <img :src="musicpic" alt="">
+            <div class="playbody"  @click="toggleLyricAndCircle">
+                <div class="circle" v-show="imageOrLyric">
+                    <img :src="musicpic" alt="" class="circleImg">
                 </div>
-                <div class="lyric"></div>
+                <div class="lyric" v-show="!imageOrLyric" >
+                    <ul>
+                        <li>第一句歌词</li>
+                        <li>第二句歌词</li>
+                        <li>第三句歌词</li>
+                    </ul>
+                </div>
             </div>
             <div class="contral">
                 <div class="items">
@@ -43,7 +49,6 @@
                         </mu-container>
                     </div>
                     <span>{{alltime}}</span>
-                    <audio id="audio" :src="musicurl"  loop="loop" autoplay="autoplay"></audio>
                 </div>
                 <div class="musiccontral">
                     <div class="model">
@@ -76,64 +81,79 @@
                 id:"",
                 linear: 10,
                 //歌曲的连接
-                musicurl:"",
                 musicname:"",
                 singer:"",
                 musicpic:"",
+                
                 //时间
+                //用在span中显示的
                 alltime:"",
+                //当前时间
                 currenttime:"00:00",
-                radio:"",
-                numALLTime:"",
+                //进度条进度
+                radio:0,
+                //用在进度条中计算的
+                numALLTime:0,
+                
+                //控制歌词或者图片的变量
+                imageOrLyric:true,
+                currentMusicLyric:"",
+                //circle
+                deg:"",
+                time:"",
             }
         },
         methods:{
-            dealtime( time ){
-                //获取整分钟数
-                let min = Number.parseInt(time/60);
-                let sec = Number.parseInt(time - min*60);
-                if(min<10){
-                    min = `0${min}`;
-                }
-                if(sec<10){
-                    sec = `0${sec}`;
-                }
-                return `${min}:${sec}`;
-            },
-            dealcurrenttime(){
-                let currenttime = 0;
-                let curTime;
-                let timer = setInterval(()=>{
-                    if(curTime === this.alltime){
-                        clearInterval(timer)
-                    }
-                    currenttime++;
-                    curTime = this.dealtime(currenttime);
-                    this.currenttime = curTime;
-                    this.radio = Number.parseInt(currenttime);
-                },1000)
+            toggleLyricAndCircle(){
+                this.imageOrLyric = !this.imageOrLyric;
+                //每次点击之后，需要重新转圈圈
+                this.circle();
             },
             circle(){
-                //处理爱的魔力转圈圈
-                let circle = document.querySelector(".circle img")
-                let deg = 0;
-                setInterval(()=>{
-                    deg = (++deg)%360;
-                    circle.style.transform = `rotate(${deg}deg)`
-                },60);
-            },
-            dealprograss(){
-                let audio = document.querySelector("#audio");
-                audio.oncanplay = ()=>{
-                    let alltime = this.dealtime(audio.duration);
-                    this.alltime = alltime;
-                    this.dealcurrenttime();
-                    this.numALLTime = audio.duration;
+                if (this.imageOrLyric) {
+                    clearInterval(this.timer);
+                    let circle = document.getElementsByClassName("circleImg")[0];
+                    //处理爱的魔力转圈圈
+                    this.timer = setInterval(() => {
+                        this.deg = (++this.deg) % 360;
+                        circle.style.transform = `rotate(${this.deg}deg)`
+                    }, 60);
                 }
             },
             //做编程导航
             goback(){
                 this.$router.go(-1);
+            },
+            //获取歌词
+            getLyric(){
+                let u = this.API.getMusicLyric(),
+                    url = u + "?id=" +this.$route.query;
+                this.axios.get(url)
+                    .then((data)=>{
+                        this.currentMusicLyric = data.data.lrc.lyric;
+                        this.dealLyric();
+                    })
+            },
+            //分割歌词，并且添加歌词到页面
+            dealLyric(){
+                //先换行
+                let lyricArr = this.currentMusicLyric.split(/\n/);
+                lyricArr.forEach((v,i)=>{
+                    let timetab = new RegExp(/\d{2}:\d{2}.\d{0,}/g)
+                    let curTime = v.match(timetab)[0].split(":")
+                    let currentTime = Number.parseFloat(curTime[0]*60) + Number.parseFloat(curTime[1]);
+                    //需要不断检测当前时间是否与之前的时间相等
+                })
+
+            },
+            addProgressInfo(){
+                this.alltime = this.$store.state.alltime;
+                setInterval(()=>{
+                    this.currenttime = this.$store.state.currenttime;
+                },500)
+                
+                this.radio = this.$store.state.radio;
+                this.numALLTime = this.$store.state.numALLTime;
             },
         },
         created () {
@@ -146,19 +166,9 @@
             //设置全局的当前音乐
             this.$store.state.currentSongId = this.$route.query;
             {
-                //获取当前歌曲url
-                let u = this.API.getmusicUrl();
-                let url = u + "?id=" + this.$route.query;
-                this.axios.get(url)
-                    .then((data)=>{
-                        this.musicurl = data.data.data[0].url;
-                        this.$store.state.musicSongUrl = this.musicurl;
-                    })
-            }
-            {
                 //获取当前歌曲详情
                 let u = this.API.getmusicDetails();
-                let url = u + "?ids=" + this.$route.query;
+                let url = u + "?ids=" + this.$store.state.currentSongId;
                 this.axios.get(url)
                     .then((data)=>{
                         let musicdetail = data.data.songs[0];
@@ -175,18 +185,23 @@
                         this.$store.state.currentSongSource = path;
                     })
             }
-            
         },
         mounted(){
-            this.dealprograss();
             this.circle();
-            
-            
+            this.getLyric();
+            //一旦进入这个页面就代表可以播放了
+            this.$store.state.shouldPlay = true;
+            this.currenttime = this.$store.state.currenttime;
         },
         beforeDestroy () {
             if (this.timer) clearInterval(this.timer);
            
         },
+        updated:function() {
+            this.$nextTick(function(){
+                this.addProgressInfo();
+            })
+        }
     }
 </script>
 
@@ -224,11 +239,17 @@
                     height:50%;
                     font-size: 0.34rem;
                     color:#FFF;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
                 .singer{
                     height:50%;
                     font-size: 0.32rem;
                     color:rgba(255,255,255,.5);
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
             }
             .attention{
@@ -288,11 +309,19 @@
                 }
             }
             .lyric{
-                display: none;
+                position:relative;
                 width:100%;
                 height:100%;
                 padding:0.5rem 0 0.2rem;
-                background-color: skyblue;
+                ul{
+                    position:absolute;
+                    width:100%;
+                    height:100%;
+                    li{
+                        text-align: center;
+                        color:#FFF;
+                    }
+                }
             }
         }
         .contral{

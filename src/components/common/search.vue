@@ -19,15 +19,13 @@
             <div class="hotSearch">
                 <h3>热门搜索</h3>
                 <div class="items clearfix">
-                    <span>起风了</span>
-                    <span>以团之名</span>
-                    <span>艾薇儿</span>
+                    <span v-for="(item) in hotList" @click="changeKeyWords">{{item.first}}</span>
                 </div>
             </div>
             <div class="history">
-                <h3>历史搜索</h3>
+                <h3>历史搜索<span class="iconfont icon-shanchu" @click="clearAllRecode"></span></h3>
                 <div class="items clearfix">
-                    <span>啦啦啦</span>
+                    <span v-for="(item) in relocalstorerecord" @click="changeKeyWords">{{item}}</span>
                 </div>
             </div>
         </div>
@@ -57,6 +55,10 @@
                 
                 //本地记录的 存储数组
                 localstorerecord:[],
+                relocalstorerecord:[],
+                
+                //热门搜索列表
+                hotList:[],
             }
         },
         methods:{
@@ -71,6 +73,10 @@
                 return str;
             },
             keyWordsSearch(){
+                //每次点击,都需要把之前的数据清除掉
+                if(this.songname.length > 0){
+                    document.querySelector(".dynamic ul").innerHTML = "";
+                }
                 if(!this.keywords) return;
                 let u = this.API.Searchinfo(),
                     keywords = this.keywords,
@@ -85,20 +91,47 @@
                             this.album.push(v.album.name);
                             this.musicId.push(v.id);
                         })
-                    })
-                this.localstorerecord.push(""+keywords);
-                this.saveSearchList(this.localstorerecord);
+                    });
+                if(this.localstorerecord.indexOf(keywords) === -1){
+                    this.localstorerecord.push(""+keywords);
+                    this.saveSearchList(this.localstorerecord);
+                }
             },
             //保存搜索记录
             saveSearchList(record){
                 //点一次确定，保存一次keywords,保存在本地应该更好
                 this.$store.dispatch("addKeyWordsRecord",record)
             },
+            //获取本地
             getlocalStore(){
-                this.$store.dispatch("getKeyWordsRecord")
+                let recode =window.localStorage.getItem("record");
+                if(!recode) return;
+                this.localstorerecord =recode.split(",");
+                this.relocalstorerecord = this.localstorerecord.reverse()
+            },
+            //热门搜索获取
+            searchhot(){
+                let url = this.API.searchHot();
+                this.axios.get(url)
+                    .then((data)=>{
+                        this.hotList = data.data.result.hots;
+                    })
+            },
+            //热门或者历史记录搜索
+            changeKeyWords(e){
+                //更改关键词
+                this.keywords = e.target.innerText;
+                //执行关键词搜索
+                this.keyWordsSearch();
+            },
+            clearAllRecode(){
+                this.localstorerecord = [];
+                this.relocalstorerecord = [];
+                this.$store.dispatch("removeKeyWordsRecord")
             }
         },
         mounted() {
+            this.searchhot();
             this.getlocalStore();
         }
     }
@@ -207,16 +240,22 @@
             padding:0 0.25rem;
         }
         h3{
+            position: relative;
             height:0.54rem;
             margin-top:0.36rem;
             font-size: 0.26rem;
+            .iconfont{
+                position:absolute;
+                right:0;
+            }
         }
         .items{
             width:100%;
             span{
                 float:left;
-                height:0.62rem;
-                line-height:0.62rem;
+                height:0.58rem;
+                line-height:0.58rem;
+                margin-bottom: 0.2rem;
                 margin-right:0.2rem;
                 padding:0 0.2rem;
                 text-align: center;
@@ -238,9 +277,15 @@
                 border-bottom:1px solid #EEE;
                 .title{
                     font-size: 0.3rem;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
                 .singer{
                     font-size: 0.24rem;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
             }
         }

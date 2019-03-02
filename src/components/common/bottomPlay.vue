@@ -1,5 +1,5 @@
 <template>
-    <router-link :to="{name:'musicplay'}">
+    <router-link :to="{name:'musicplay',query:musicID}">
         <div class="bottomPlay">
             <div class="pic"><img :src="musicPic" alt=""></div>
             <div class="details">
@@ -28,12 +28,10 @@
         },
         beforeMount() {
             let path = this.$store.state.currentSongSource
-            console.log(this.$store.state.currentSongSource);
             this.musicName = path.musicName;
             this.musicSinger = path.musicSinger;
             this.musicPic = path.musicpic;
             this.musicID = this.$store.state.currentSongId;
-            console.log(path.musicID)
         },
         methods:{
             addAudio(){
