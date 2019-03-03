@@ -9,10 +9,10 @@ Vue.prototype.axios = axios;
 import API from "./api/index";
 Vue.prototype.API = API;
 //引入ui框架
-import { Progress } from 'muse-ui';
-import 'muse-ui/lib/styles/base.less';
-import 'muse-ui/lib/styles/theme.less';
-Vue.use(Progress);
+import MuseUI from 'muse-ui';
+import 'muse-ui/dist/muse-ui.css';
+
+Vue.use(MuseUI);
 //引入store方法库
 import store from "./store/store";
 

@@ -16,16 +16,18 @@ const store = new Vuex.Store({
         //进度条显示总时长
         numALLTime:"",
         //音乐播放的当前位置
-        currentTime:"",
+        currenttime:"",
         //进度条比例
         radio:"",
+        //当前音乐歌词的进度
+        index:"",
 
         //当前歌单的id
         currentlistId:"",
         //搜索记录
         searchRecorde:"",
         //是否有音乐需要播放
-        shouldPlay:"",
+        shouldPlay:false,
     },
     computed:{
         currentSongId(){
@@ -52,11 +54,14 @@ const store = new Vuex.Store({
         numALLTime(){
             return this.state.numALLTime;
         },
-        currentTime(){
-            return this.state.currentTime;
+        currenttime(){
+            return this.state.currenttime;
         },
         radio(){
             return this.state.radio;
+        },
+        index(){
+            return this.state.index;
         },
 
     },
@@ -72,9 +77,15 @@ const store = new Vuex.Store({
         removeKeyWordsRecord(){
             window.localStorage.removeItem("record")
         },
+        //这个是更改播放状态的方法
+        changePlayStatus(){
+            console.log("改变前"+this.state.shouldPlay);
+            this.state.shouldPlay = !this.state.shouldPlay;
+            console.log("改变后"+this.state.shouldPlay);
+        },
     },
     actions:{
-        //结构方法
+        //解构方法
         addKeyWordsRecord({commit},str){
             commit("addKeyWordsRecord",str)
         },
@@ -85,6 +96,10 @@ const store = new Vuex.Store({
         },
         removeKeyWordsRecord(context){
             context.commit("removeKeyWordsRecord")
+        },
+        changePlayStatus({commit}){
+            console.log("action成功了")
+            commit("changePlayStatus");
         },
     }
 

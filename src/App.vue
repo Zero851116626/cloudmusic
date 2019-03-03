@@ -32,10 +32,10 @@ export default {
                 res();
             })
                 .then(()=>{
-                    console.log(1);
                     audio = document.querySelector("#audio");
                     audio.autoplay = "autoplay";
                     this.dealprograss();
+                    setInterval(this.checkPlayStatus,500);
             })
         },
         dealtime( time ){
@@ -73,6 +73,10 @@ export default {
                 this.$store.state.alltime = this.dealtime(audio.duration);
                 this.$store.state.numALLTime = audio.duration;
             }
+        },
+        checkPlayStatus(){
+            let audio = document.querySelector("#audio");
+            this.$store.state.shouldPlay?audio.play():audio.pause();
         },
     },
     mounted(){

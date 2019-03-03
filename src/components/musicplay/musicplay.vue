@@ -22,9 +22,6 @@
                 </div>
                 <div class="lyric" v-show="!imageOrLyric" >
                     <ul>
-                        <li>第一句歌词</li>
-                        <li>第二句歌词</li>
-                        <li>第三句歌词</li>
                     </ul>
                 </div>
             </div>
@@ -58,7 +55,7 @@
                         <span class="iconfont icon-shangyiqu101"></span>
                     </div>
                     <div class="pauseOrPlay">
-                        <span class="iconfont icon-bofang"></span>
+                        <span class="iconfont icon-bofang" @click="changePlayStatus"></span>
                         <span class="iconfont icon-zanting"></span>
                     </div>
                     <div class="next">
@@ -136,15 +133,50 @@
             },
             //分割歌词，并且添加歌词到页面
             dealLyric(){
+                //用来存放歌词的变量
+                let lyrics = "";
                 //先换行
                 let lyricArr = this.currentMusicLyric.split(/\n/);
-                lyricArr.forEach((v,i)=>{
+                console.log(lyricArr);
+                //上一次的时间
+                let lastTime = 0;
+                //时间差
+                let dt = [];
+                lyricArr.forEach((v)=>{
+                    //处理歌词前的时间
+                    if(typeof v === null)  return;
                     let timetab = new RegExp(/\d{2}:\d{2}.\d{0,}/g)
-                    let curTime = v.match(timetab)[0].split(":")
-                    let currentTime = Number.parseFloat(curTime[0]*60) + Number.parseFloat(curTime[1]);
-                    //需要不断检测当前时间是否与之前的时间相等
-                })
-
+                    if(!v.match(timetab)) return;
+                    let curTime = Number.parseInt(v.match(timetab)["0"].split(":"));
+                    //处理curTime的后半段
+                    let second = Number.parseFloat(v.match(timetab)["0"].split(":")[1].slice(0,5));
+                    let newTime = curTime*60 + second;
+                    //保存时间差
+                    dt.push(newTime-lastTime);
+                    lastTime = newTime;
+    
+                    //处理歌词
+                    let lyric = "";
+                    let length = v.match(timetab)["0"].split(":")[1].length;
+                    //因为歌词时间牌长度不一样，所以做一下兼容处理吧
+                    console.log(length);
+                    if(length === 5){
+                        lyric = v.slice(10,v.length)
+                    }else {
+                        lyric = v.slice(11,v.length);
+                    }
+                    
+                    let li = `<li style="height:0.35rem; line-height:0.35rem;color:rgba(207,207,207,.5);text-align: center">${lyric}</li>`;
+                    lyrics += li;
+                });
+                //为歌词制作一个初始位置
+                let wrap = document.querySelector(".playbody .lyric ul");
+                wrap.innerHTML =lyrics;
+                wrap.style.top = "240px";
+                
+                //调用歌词行高变化方法
+                let fixedHeight = 0.17*100;
+                this.setScrollHeight(wrap,240,fixedHeight,dt)
             },
             addProgressInfo(){
                 this.alltime = this.$store.state.alltime;
@@ -154,6 +186,43 @@
                 
                 this.radio = this.$store.state.radio;
                 this.numALLTime = this.$store.state.numALLTime;
+            },
+            setScrollHeight(Node,startHeight,fixedHeight,time){
+                let timer;
+                let index = 1;
+                let lis = document.querySelectorAll(".playbody .lyric ul li");
+                let that = this;
+                function scroll(){
+                    //暂停状态
+                    if(!that.$store.state.shouldPlay){
+                        //如果状态为false，就清除定时器，也就暂停了歌词的滚动
+                        //然后不断检测shouldPlay的状态
+                        let timer2 = setInterval(()=>{
+                            if(that.$store.state.shouldPlay){
+                                clearInterval(timer2);
+                                lis[index-2].style.color = "rgba(207,207,207,.5)";
+                                timer = setTimeout(scroll,time[index]*1000);
+                            }
+                        },500);
+                    }else{
+                        //正常播放状态
+                        startHeight = startHeight -fixedHeight;
+                        Node.style.top = startHeight + "px";
+                        if(index>1){
+                            lis[index-1].style.color = "#FFF";
+                            lis[index-2].style.color = "rgba(207,207,207,.5)";
+                        }
+                        timer = setTimeout(scroll,time[index]*1000);
+                        index++;
+                    }
+                }
+                scroll();
+            },
+            
+            //歌曲播放状态的改变
+            changePlayStatus(){
+                console.log("dispatch执行了");
+                this.$store.dispatch("changePlayStatus");
             },
         },
         created () {
@@ -188,10 +257,10 @@
         },
         mounted(){
             this.circle();
-            this.getLyric();
             //一旦进入这个页面就代表可以播放了
             this.$store.state.shouldPlay = true;
             this.currenttime = this.$store.state.currenttime;
+            this.getLyric();
         },
         beforeDestroy () {
             if (this.timer) clearInterval(this.timer);
@@ -313,14 +382,13 @@
                 width:100%;
                 height:100%;
                 padding:0.5rem 0 0.2rem;
+                overflow: scroll;
                 ul{
                     position:absolute;
                     width:100%;
                     height:100%;
-                    li{
-                        text-align: center;
-                        color:#FFF;
-                    }
+                    top:0;
+                    left:0;
                 }
             }
         }
