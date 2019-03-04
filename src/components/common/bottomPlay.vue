@@ -6,8 +6,8 @@
                 <p class="title">{{musicName}}</p>
                 <p class="singer">{{musicSinger}}</p>
             </div>
-            <div class="btns">
-                <span class="iconfont icon-bofang"></span>
+            <div class="btns" >
+                <span class="iconfont icon-bofang" @click="changePlayStatus"></span>
                 <span class="iconfont icon-liebiao"></span>
             </div>
         </div>
@@ -40,7 +40,10 @@
                 audio.onload = function(){
                     audio.currentTime = this.$store.state.currentTime;
                 }
-            }
+            },
+            changePlayStatus(){
+                this.$store.dispatch("changePlayStatus");
+            },
         }
         
     }

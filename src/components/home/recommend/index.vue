@@ -131,7 +131,6 @@
                 this.axios.get(url)
                     .then((data)=>{
                         if(data.status === 200){
-                            console.log(data);
                             let show = data.data.result.slice(0,6);
                             this.hostStation = show;
                         }

@@ -137,7 +137,6 @@
                 let lyrics = "";
                 //先换行
                 let lyricArr = this.currentMusicLyric.split(/\n/);
-                console.log(lyricArr);
                 //上一次的时间
                 let lastTime = 0;
                 //时间差
@@ -159,7 +158,6 @@
                     let lyric = "";
                     let length = v.match(timetab)["0"].split(":")[1].length;
                     //因为歌词时间牌长度不一样，所以做一下兼容处理吧
-                    console.log(length);
                     if(length === 5){
                         lyric = v.slice(10,v.length)
                     }else {
@@ -221,7 +219,6 @@
             
             //歌曲播放状态的改变
             changePlayStatus(){
-                console.log("dispatch执行了");
                 this.$store.dispatch("changePlayStatus");
             },
         },

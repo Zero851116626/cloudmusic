@@ -79,9 +79,7 @@ const store = new Vuex.Store({
         },
         //这个是更改播放状态的方法
         changePlayStatus(){
-            console.log("改变前"+this.state.shouldPlay);
             this.state.shouldPlay = !this.state.shouldPlay;
-            console.log("改变后"+this.state.shouldPlay);
         },
     },
     actions:{
@@ -98,7 +96,6 @@ const store = new Vuex.Store({
             context.commit("removeKeyWordsRecord")
         },
         changePlayStatus({commit}){
-            console.log("action成功了")
             commit("changePlayStatus");
         },
     }
