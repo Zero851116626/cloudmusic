@@ -10,6 +10,8 @@ import Search from "../components/common/search";
 import MusicPlay from "../components/musicplay/musicplay";
 import Musiclist from "../components/musiclist/musiclist";
 import Notfound from "../components/not/notfound";
+import UserMusicList from "../components/play/usermusiclist";
+
 
 
 Vue.use(Router);
@@ -52,8 +54,13 @@ export default new Router({
                   path:'/video',
                   name:'video',
                   component:Video,
-              }
+              },
           ],
+      },
+      {
+          path:'/play/userlist',
+          name:'userlist',
+          component:UserMusicList,
       },
       {
           path:'/search',

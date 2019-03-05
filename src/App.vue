@@ -1,7 +1,7 @@
 <template>
   <div id="app">
       <router-view/>
-      <audio id="audio" :src="musicurl"  loop="loop"></audio>
+      <audio id="audio" :src="musicurl"></audio>
   </div>
 </template>
 

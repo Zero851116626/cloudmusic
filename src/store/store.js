@@ -28,6 +28,15 @@ const store = new Vuex.Store({
         searchRecorde:"",
         //是否有音乐需要播放
         shouldPlay:false,
+
+        //用户个人歌单列表
+        userListinfo:[{
+            id:201903050000,
+            name:"我喜欢的",
+            songs:[],
+        }],
+        //个人歌单参数保存
+        userlistsave:"",
     },
     computed:{
         currentSongId(){
@@ -63,7 +72,12 @@ const store = new Vuex.Store({
         index(){
             return this.state.index;
         },
-
+        userListinfo(){
+            return this.state.userListinfo;
+        },
+        userlistsave(){
+            return this.state.userlistsave;
+        },
     },
     mutations:{
         //mutation是用来管理数据的
@@ -81,6 +95,15 @@ const store = new Vuex.Store({
         changePlayStatus(){
             this.state.shouldPlay = !this.state.shouldPlay;
         },
+        //把歌单信息保存在本地
+        saveUserListinfo(){
+            console.log(this);
+            window.localStorage.setItem("userList",JSON.stringify(this.state.userListinfo));
+        },
+        deleteUserListinfo(){
+            window.localStorage.removeItem("userList");
+            window.localStorage.setItem("userList",JSON.stringify(this.state.userListinfo));
+        },
     },
     actions:{
         //解构方法
@@ -97,6 +120,12 @@ const store = new Vuex.Store({
         },
         changePlayStatus({commit}){
             commit("changePlayStatus");
+        },
+        saveUserListinfo({commit}){
+            commit("saveUserListinfo");
+        },
+        deleteUserListinfo({commit}){
+            commit("deleteUserListinfo")
         },
     }
 

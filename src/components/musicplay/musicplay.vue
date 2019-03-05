@@ -1,6 +1,6 @@
 <template>
     <div class="musicplay">
-            <div class="topNav">
+        <div class="topNav">
                 <div class="back" @click="goback">
                     <span class="iconfont icon-houtui"></span>
                 </div>
@@ -16,7 +16,7 @@
                     <span class="iconfont icon-fenxiang2"></span>
                 </div>
             </div>
-            <div class="playbody"  @click="toggleLyricAndCircle">
+        <div class="playbody"  @click="toggleLyricAndCircle">
                 <div class="circle" v-show="imageOrLyric">
                     <img :src="musicpic" alt="" class="circleImg">
                 </div>
@@ -25,10 +25,10 @@
                     </ul>
                 </div>
             </div>
-            <div class="contral">
+        <div class="contral">
                 <div class="items">
                     <ul>
-                        <li><span class="iconfont icon-xihuan"></span></li>
+                        <li><span class="iconfont icon-xihuan" @click="popupChoose"></span></li>
                         <li><span class="iconfont icon-xiazai "></span></li>
                         <li><span class="iconfont icon-ziyuanldpi1"></span></li>
                         <li><span class="iconfont icon-weibiaoti- "></span></li>
@@ -66,7 +66,14 @@
                     </div>
                 </div>
             </div>
+        <div class="wrap" v-show="isWrap">
+            <div class="box">
+                <ul>
+                    <li v-for="(item,index) of list" @click="clickAgain(index)">{{item.name}}</li>
+                </ul>
+            </div>
         </div>
+    </div>
 </template>
 
 <script>
@@ -98,6 +105,10 @@
                 //circle
                 deg:"",
                 time:"",
+                
+                //是否弹出框
+                isWrap:false,
+                list:[],
             }
         },
         methods:{
@@ -216,10 +227,27 @@
                 }
                 scroll();
             },
-            
             //歌曲播放状态的改变
             changePlayStatus(){
                 this.$store.dispatch("changePlayStatus");
+            },
+            //心的第一次点击
+            popupChoose(){
+                this.isWrap = true;
+                this.list = JSON.parse(window.localStorage.getItem("userList"));
+                console.log(this.list);
+            },
+            //歌单列表后的再一次点击
+            clickAgain(index){
+                console.log(index);
+                let arr = {};
+                arr.id = this.$store.state.currentSongId;
+                arr.name = this.musicname;
+                arr.singer = this.singer;
+                this.list[index].songs.push(arr);
+                this.$store.state.userListinfo = this.list;
+                this.$store.dispatch("saveUserListinfo");
+                this.isWrap = false;
             },
         },
         created () {
@@ -277,6 +305,7 @@
         margin: 16px 0;
     }
     .musicplay{
+        position:relative;
         width:100%;
         height:100vh;
         padding:0 0.24rem 0.3rem;
@@ -458,6 +487,34 @@
                     .icon-zanting{
                         display: none;
                         font-size: 0.8rem;
+                    }
+                }
+            }
+        }
+        .wrap{
+            position:absolute;
+            top:0;
+            left:0;
+            width:100%;
+            height:100%;
+            background-color:rgba(207,207,207,.8);
+            .box{
+                position:absolute;
+                top:50%;
+                left:50%;
+                width:100%;
+                height:30%;
+                transform:translate(-50%,-50%);
+                background-color:#FFF;
+                ul{
+                    width:100%;
+                    height:100%;
+                    padding:0.2rem;
+                    li{
+                        height:0.25rem;
+                        line-height:0.25rem;
+                        font-size: 0.24rem;
+                        margin-bottom:0.2rem;
                     }
                 }
             }
